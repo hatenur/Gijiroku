@@ -8,7 +8,7 @@
    まずは、このコードが格納されているリポジトリをローカルにクローンします。
 
    ```bash
-   git clone [リポジトリのURL]
+   git clone https://github.com/hatenur/Gijiroku.git
    cd [クローンしたリポジトリのディレクトリ名]
    ```
 
@@ -23,7 +23,7 @@
    このスクリプトを実行するには、いくつかの Python パッケージが必要です。以下のコマンドで必要なパッケージをインストールします。
 
    ```bash
-   pip install dotenv whisper langchain
+   pip install -r requirements.txt
    ```
 
 ## 実行方法

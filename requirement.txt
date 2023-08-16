@@ -1,1 +1,3 @@
-pydub
+dotenv
+whisper
+langchain
