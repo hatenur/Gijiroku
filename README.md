@@ -26,12 +26,29 @@
    pip install -r requirements.txt
    ```
 
+4. **langchain パッケージのコード修正**
+   このスクリプトを実行するために、Langchain のパッケージのコードを修正する必要がある。
+   具体的には
+   langchain>document_loaders_parsers_audio.py
+   の OpenAIWhisperPaser>lazy_pase
+   ```python
+         # この部分を追加
+         if blob.data is not None:
+            audio = AudioSegment.from_file(io.BytesIO(blob.data))
+        else:
+         # この部分を追加
+            audio = AudioSegment.from_file(blob.path)
+   ```
+   Langchain のこの時のバージョンでは、音声ファイルのバイナリ自体を渡して、処理することができず、ファイルのパスを読み込むつくりになっていた。
+   そのためここでは、バイナリファイルを渡されているときは、そのまま使うように修正している
+
 ## 実行方法
 
-コマンドラインから以下のようにスクリプトを実行します。
+1. コマンドラインから実行する場合
+   コマンドラインから以下のようにスクリプトを実行します。
 
 ```bash
-python [スクリプトのファイル名].py [オプション] mp4_path
+python gijiroku.py [オプション] mp4_path
 ```
 
 **引数:**
@@ -40,16 +57,29 @@ python [スクリプトのファイル名].py [オプション] mp4_path
 
 **オプション:**
 
-- `-W, --whisper`: Whisper の API を使うか、インストール版を使うかを指定します。
+- `-W, --whisper`: Whisper の API を使うか、インストール版を使うかを指定します。デフォルトは`api`です。
 - `-G, --gpt`: 使用する GPT モデルを指定します。デフォルトは `gpt-3.5-turbo-16k` です。
 
 **例:**
 
 ```bash
-python [スクリプトのファイル名].py -W api -G gpt-4.0-turbo sample.mp4
+python gijiroku.py -W api -G gpt-4.0-turbo sample.mp4
 ```
 
 この例では、`sample.mp4`という音声ファイルを処理し、Whisper の API を使用して音声をテキストに変換した後、`gpt-4.0-turbo`モデルを使用してそのテキストを整理・要約します。
+
+2. API を実行する場合
+
+**UvicornSrever の起動**
+
+```bash
+uvicorn api:app --reload
+```
+
+※reload なので、コードに変更があれば、リフレッシュされる
+
+**SampleHTML で試したい場合**
+http://127.0.0.1:8000/static/index.html
 
 ## 実行結果
 

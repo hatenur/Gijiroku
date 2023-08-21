@@ -26,10 +26,12 @@ def transcribe_audio(mp4_path):
 
 
 # whisperの純粋APIを使うと、ファイルのサイズが大きいとエラーになるので、その辺を考慮しているLangchainを使う
-def transcribe_audio_api(mp4_path):
+def transcribe_audio_api(mp4_file):
     print("transcribe_audio_api")
     # Create a Blob object from the mp4_path
-    blob = Blob.from_path(mp4_path)
+    # blob = Blob.from_path(mp4_path)
+
+    blob = Blob.from_data(data=mp4_file, mime_type="video/mp4")
 
     full_transcription = " ".join(
         document.page_content for document in OpenAIWhisperParser().lazy_parse(blob)
@@ -94,9 +96,9 @@ def split_file_text(file_path):
 
 
 # Function to handle transcription and GPT-4 response
-def handle_audio(mp4_path, api, gptmodel):
+def handle_audio(mp4_file, result_path, api, gptmodel):
     # Generate transcription file path
-    transcription_file = os.path.splitext(mp4_path)[0] + ".txt"
+    transcription_file = result_path + ".txt"
 
     # Check if transcription file exists
     # If it does, read transcription from file
@@ -107,10 +109,10 @@ def handle_audio(mp4_path, api, gptmodel):
         # 二つ目の引数オプションがapiの場合、apiを利用する
         if api == "api":
             # Transcribe audio and save transcription
-            transcription_text = transcribe_audio_api(mp4_path)
+            transcription_text = transcribe_audio_api(mp4_file)
         else:
             # Transcribe audio and save transcription
-            transcription_text = transcribe_audio(mp4_path)
+            transcription_text = transcribe_audio(mp4_file)
 
         with open(transcription_file, "w") as file:
             file.write(transcription_text)
@@ -122,8 +124,10 @@ def handle_audio(mp4_path, api, gptmodel):
     print(response)
 
     # responseを別のファイルに書き込む
-    with open(os.path.splitext(mp4_path)[0] + "response.txt", "w") as file:
+    with open(result_path + "response.txt", "w") as file:
         file.write(response)
+
+    return response
 
 
 if __name__ == "__main__":
@@ -136,6 +140,7 @@ if __name__ == "__main__":
         type=str,
         required=False,
         help="whisper API or install option",
+        default="api",
     )
     parser.add_argument(
         "-G",
@@ -147,8 +152,17 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    mp4_file = open(args.mp4_path, "rb").read()
+
+    result_path = os.path.splitext(args.mp4_path)[0]
+
     # 議事録作成処理の実行
     try:
-        handle_audio(args.mp4_path, args.whisper, args.gpt)
+        handle_audio(
+            mp4_file,
+            result_path,
+            args.whisper,
+            args.gpt,
+        )
     except Exception as e:
         print(e)
